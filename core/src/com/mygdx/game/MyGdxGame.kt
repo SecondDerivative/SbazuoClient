@@ -5,12 +5,19 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.mygdx.httpwrapper.HttpConnector
+import com.mygdx.httpwrapper.ServerConnector
+import java.util.concurrent.Executors
 
 class MyGdxGame : ApplicationAdapter() {
     private lateinit var batch: SpriteBatch
     private lateinit var img: Texture
+    private val e = Executors.newFixedThreadPool(1)
+    private val connector : ServerConnector = HttpConnector(e, "127.0.0.1")
 
     override fun create() {
+
+        connector.startListen() // TODO: mvp only
         batch = SpriteBatch()
         img = Texture("badlogic.jpg")
     }
@@ -26,5 +33,7 @@ class MyGdxGame : ApplicationAdapter() {
     override fun dispose() {
         batch.dispose()
         img.dispose()
+        connector.dispose()
+        e.shutdown()
     }
 }
