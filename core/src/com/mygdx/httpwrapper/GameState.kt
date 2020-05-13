@@ -1,4 +1,3 @@
 package com.mygdx.httpwrapper
 
-class GameState {
-}
+data class GameState(var field : Int)
