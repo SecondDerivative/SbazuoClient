@@ -8,18 +8,22 @@ import com.badlogic.gdx.Net.HttpResponseListener
 import com.badlogic.gdx.net.HttpParametersUtils
 import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
+import com.mygdx.dto.GameEvent
+import com.mygdx.dto.GameState
+import com.mygdx.dto.Point
+import com.mygdx.dto.StupidGameEvent
 import com.mygdx.util.Logger
 import com.mygdx.util.Utility
 import java.lang.IllegalStateException
 import java.lang.NullPointerException
 import java.util.*
+import java.util.concurrent.CompletableFuture
 import kotlin.collections.ArrayList
 
 class HttpConnector(private val e: ExecutorService, private val url: String) : ServerConnector {
     companion object {
         private const val GET_PATH = "api/get"
-        private const val DODO_PATH = "api/dodo"
-        private val LOGGER = Logger("ServerConnector")
+        private val LOGGER = Logger("HttpConnector")
         private val EVENT_TO_CLASS = mapOf<String, Class<out GameEvent>>(
                 "stupid" to StupidGameEvent::class.java)
 
@@ -54,7 +58,8 @@ class HttpConnector(private val e: ExecutorService, private val url: String) : S
     private var notSendedEvents = ArrayList<GameEvent>()
     private val stateMutex = Object()
 
-    override fun startListen() {
+    override fun startListen() : CompletableFuture<String> {
+        TODO("join and get token/playedId")
         send(HttpRequestBuilder()
                 .newRequest()
                 .method(Net.HttpMethods.GET)
@@ -82,8 +87,12 @@ class HttpConnector(private val e: ExecutorService, private val url: String) : S
         }
     }
 
-    override fun dodo(info: DodoInfo) {
-        sendPost(DODO_PATH, Utility.gson.toJson(info)) { resp -> }
+    override fun createBlock(position: Point, blockId: String, shapeId: String) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun shoot(motionDirection: Point, projectileId: String) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun getState(): Pair<GameState, List<GameEvent>> {
