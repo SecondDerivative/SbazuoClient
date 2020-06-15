@@ -41,7 +41,7 @@ class JSONTest {
     @Test
     fun testListParse() {
         val id = "stupid"
-        val json = "{\"events\": [{\"eventId\":\"$id\"}, {\"eventId\":\"$id\"}]}"
+        val json = """{"events": [{"eventId":"$id"}, {"eventId":"$id"}]}"""
         val res = Utility.gson.fromJson(json, ListEvents::class.java)
         assertThat(res, equalTo(ListEvents(listOf(StupidGameEvent(id), StupidGameEvent(id)))))
     }
