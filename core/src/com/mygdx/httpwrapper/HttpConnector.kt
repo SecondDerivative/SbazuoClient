@@ -8,10 +8,7 @@ import com.badlogic.gdx.Net.HttpResponseListener
 import com.badlogic.gdx.net.HttpParametersUtils
 import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
-import com.mygdx.dto.GameEvent
-import com.mygdx.dto.GameState
-import com.mygdx.dto.Point
-import com.mygdx.dto.StupidGameEvent
+import com.mygdx.dto.*
 import com.mygdx.util.Logger
 import com.mygdx.util.Utility
 import java.lang.IllegalStateException
@@ -20,26 +17,16 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import kotlin.collections.ArrayList
 
+const val GET_PATH = "api/get"
+val LOGGER = Logger("HttpConnector")
+
 class HttpConnector(private val e: ExecutorService, private val url: String) : ServerConnector {
     companion object {
-        private const val GET_PATH = "api/get"
-        private val LOGGER = Logger("HttpConnector")
-        private val EVENT_TO_CLASS = mapOf<String, Class<out GameEvent>>(
-                "stupid" to StupidGameEvent::class.java)
-
         // static for unit test
         fun parseGet(s: String): Optional<Pair<GameState, List<GameEvent>>> {
             try {
-                val json = JsonParser.parseString(s).asJsonObject
-                val gs = Utility.gson.fromJson(json["state"], GameState::class.java)
-
-                val events = json["events"].asJsonArray
-                val parsedEvents = ArrayList<GameEvent>()
-                events.forEach { event ->
-                    val eventName = event.asJsonObject["name"].asString
-                    parsedEvents.add(Utility.gson.fromJson(event, EVENT_TO_CLASS[eventName]))
-                }
-                return Optional.of(gs to parsedEvents)
+                val res = Utility.gson.fromJson(JsonParser.parseString(s), GetResponse::class.java)
+                return Optional.of(res.state to res.events)
             } catch (e: IllegalStateException) {
                 LOGGER.error("invalid response format from server\n$s", e)
             } catch (e: JsonSyntaxException) {
@@ -58,7 +45,7 @@ class HttpConnector(private val e: ExecutorService, private val url: String) : S
     private var notSendedEvents = ArrayList<GameEvent>()
     private val stateMutex = Object()
 
-    override fun startListen() : CompletableFuture<String> {
+    override fun startListen(): CompletableFuture<String> {
         TODO("join and get token/playedId")
         send(HttpRequestBuilder()
                 .newRequest()

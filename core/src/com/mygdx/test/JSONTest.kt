@@ -1,12 +1,11 @@
 package com.mygdx.test
 
 import com.mygdx.dto.*
-import com.mygdx.httpwrapper.*
 import com.mygdx.util.Utility
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.instanceOf
 import org.junit.jupiter.api.Test
-import java.util.*
 
 class JSONTest {
     @Test
@@ -16,32 +15,34 @@ class JSONTest {
                 equalTo(a))
     }
 
-    @Test
-    fun testParseGetSuccess() {
-        val s = "{" +
-                "   \"state\": {" +
-                "       \"field\": 2" +
-                "   }, " +
-                "   \"events\": [" +
-                "       {\"name\": \"stupid\"}," +
-                "       {\"name\": \"stupid\"}" +
-                "   ]" +
-                "}"
-        val result = HttpConnector.parseGet(s)
-        // TODO: change tst and parser
-        //assertThat(result, equalTo(Optional.of(
-        //        GameState(2) to listOf(StupidGameEvent("stupid"), StupidGameEvent("stupid")) as List<GameEvent>)))
+    private fun <T : Any> doTypedParseTest(value: T, typeToken: Class<in T>) {
+        val json = Utility.gson.toJson(value);
+        val newValue = Utility.gson.fromJson(json, typeToken);
+        assertThat(newValue, instanceOf(value::class.java))
+        assertThat(newValue as T, equalTo(value))
     }
 
     @Test
-    fun testParseGetFailed() {
-        val s = "{" +
-                "   \"state\": {" +
-                "       \"field\": 2" +
-                "   }, " +
-                "   \"events\": \"Isn't array\"" +
-                "}"
-        val result = HttpConnector.parseGet(s)
-        assertThat(result, equalTo(Optional.empty()))
+    fun testBlockParse() {
+        doTypedParseTest(PhysicalBlock("id", "id", "shapeId", Point(0.0, 0.0), 1, 1),
+                Block::class.java)
+    }
+
+    @Test
+    fun testEventParse() {
+        doTypedParseTest(StupidGameEvent("id"),
+                GameEvent::class.java)
+    }
+
+    private data class ListEvents(
+            val events: List<GameEvent>
+    )
+
+    @Test
+    fun testListParse() {
+        val id = "stupid"
+        val json = "{\"events\": [{\"eventId\":\"$id\"}, {\"eventId\":\"$id\"}]}"
+        val res = Utility.gson.fromJson(json, ListEvents::class.java)
+        assertThat(res, equalTo(ListEvents(listOf(StupidGameEvent(id), StupidGameEvent(id)))))
     }
 }
